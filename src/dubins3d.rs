@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use crate::State;
 // mod dubins2d;
 use crate::dubins2d::{
     DubinsManeuver2D, 
@@ -11,11 +12,9 @@ use crate::vertical;
 
 // use dubins2d::DubinsManeuver2D
 
-type Point = (f64, f64, f64, f64, f64);
-
 pub struct DubinsManeuver3D {
-    qi: Point,
-    qf: Point,
+    qi: State,
+    qf: State,
     rhomin: f64,
     pitchlims: (f64, f64),
     path: Vec<DubinsManeuver2D>,
@@ -23,7 +22,7 @@ pub struct DubinsManeuver3D {
 }
 
 impl DubinsManeuver3D {
-    pub fn new(qi: Point, qf: Point, rhomin: f64, pitchlims: (f64, f64)) -> DubinsManeuver3D {
+    pub fn new(qi: State, qf: State, rhomin: f64, pitchlims: (f64, f64)) -> DubinsManeuver3D {
         let mut maneuver = DubinsManeuver3D {
             qi: qi,
             qf: qf,
@@ -77,7 +76,7 @@ impl DubinsManeuver3D {
         return maneuver;
     }
     
-    pub fn get_lower_bound(qi: Point, qf: Point, rhomin: f64, pitchlims: (f64, f64)) -> Self {
+    pub fn get_lower_bound(qi: State, qf: State, rhomin: f64, pitchlims: (f64, f64)) -> Self {
         let mut maneuver = DubinsManeuver3D {
             qi: qi,
             qf: qf,
@@ -89,12 +88,12 @@ impl DubinsManeuver3D {
     
         let spiral_radius = rhomin * ((-pitchlims.0).max(pitchlims.1)).cos().powi(2);
     
-        let qi2d = (maneuver.qi.0, maneuver.qi.1, maneuver.qi.3);
-        let qf2d = (maneuver.qf.0, maneuver.qf.1, maneuver.qf.3);
+        let qi2d = (maneuver.qi.x, maneuver.qi.y, maneuver.qi.yaw);
+        let qf2d = (maneuver.qf.x, maneuver.qf.y, maneuver.qf.yaw);
         let dlat = DubinsManeuver2D::new(qi2d, qf2d, spiral_radius, core::f64::NEG_INFINITY, false);
     
-        let qi3d = (0.0, maneuver.qi.2, maneuver.qi.4);
-        let qf3d = (dlat.maneuver.length, maneuver.qf.2, maneuver.qf.4);
+        let qi3d = (0.0, maneuver.qi.z, maneuver.qi.pitch);
+        let qf3d = (dlat.maneuver.length, maneuver.qf.z, maneuver.qf.pitch);
         let dlon = vertical::get_vertical(qi3d, qf3d, maneuver.rhomin, maneuver.pitchlims);
     
         if dlon.maneuver.case.a == SegmentType::NONE {
@@ -107,7 +106,7 @@ impl DubinsManeuver3D {
         return maneuver;
     }
     
-    pub fn get_upper_bound(qi: Point, qf: Point, rhomin: f64, pitchlims: (f64, f64)) -> DubinsManeuver3D {
+    pub fn get_upper_bound(qi: State, qf: State, rhomin: f64, pitchlims: (f64, f64)) -> DubinsManeuver3D {
         let mut maneuver = DubinsManeuver3D {
             qi: qi,
             qf: qf,
@@ -118,19 +117,19 @@ impl DubinsManeuver3D {
         };
     
         let safe_radius = (2.0 as f64).sqrt() * maneuver.rhomin;
-        let diff = (qf.0 - qi.0, qf.1 - qi.1);
+        let diff = (qf.x - qi.x, qf.y - qi.y);
         let dist = (diff.0 * diff.0 + diff.1 * diff.1).sqrt();
         if dist < 4.0 * safe_radius {
             maneuver.length = core::f64::INFINITY;
             return maneuver;
         }
     
-        let qi2d = (maneuver.qi.0, maneuver.qi.1, maneuver.qi.3);
-        let qf2d = (maneuver.qf.0, maneuver.qf.1, maneuver.qf.3);
+        let qi2d = (maneuver.qi.x, maneuver.qi.y, maneuver.qi.yaw);
+        let qf2d = (maneuver.qf.x, maneuver.qf.y, maneuver.qf.yaw);
         let dlat = DubinsManeuver2D::new(qi2d, qf2d, safe_radius, core::f64::NEG_INFINITY, false);
     
-        let qi3d = (0.0, maneuver.qi.2, maneuver.qi.4);
-        let qf3d = (dlat.maneuver.length, maneuver.qf.2, maneuver.qf.4);
+        let qi3d = (0.0, maneuver.qi.z, maneuver.qi.pitch);
+        let qf3d = (dlat.maneuver.length, maneuver.qf.z, maneuver.qf.pitch);
         let dlon = vertical::get_vertical(qi3d, qf3d, safe_radius, maneuver.pitchlims);
     
         if dlon.maneuver.case.a == SegmentType::NONE {
@@ -143,18 +142,18 @@ impl DubinsManeuver3D {
         return maneuver;
     }
 
-    pub fn compute_sampling(self: &Self, number_of_samples: i32) -> Vec<Point> {
+    pub fn compute_sampling(self: &Self, number_of_samples: i32) -> Vec<State> {
         let dlat = &self.path[0];
         let dlon = &self.path[1];
     
-        let mut points: Vec<Point> = Vec::new();
+        let mut points: Vec<State> = Vec::new();
     
         for sample in 0..number_of_samples {
             let prog: f64 =  dlon.maneuver.length * (sample as f64) / (number_of_samples as f64);
             // println!("{}", prog);
             let q_sz = get_coordinates_at(&dlon, prog);
             let q_xy = get_coordinates_at(&dlat, q_sz.0);
-            points.push((q_xy.0, q_xy.1, q_sz.1, q_xy.2, q_sz.2));
+            points.push(State{x: q_xy.0, y: q_xy.1, z: q_sz.1, yaw: q_xy.2, pitch: q_sz.2});
         }
     
         return points;
@@ -162,13 +161,13 @@ impl DubinsManeuver3D {
 }
 
 fn try_to_construct(maneuver: &DubinsManeuver3D, horizontal_radius: f64) -> Vec<DubinsManeuver2D> {
-    let qi2d = (maneuver.qi.0, maneuver.qi.1, maneuver.qi.3);
-    let qf2d = (maneuver.qf.0, maneuver.qf.1, maneuver.qf.3);
+    let qi2d = (maneuver.qi.x, maneuver.qi.y, maneuver.qi.yaw);
+    let qf2d = (maneuver.qf.x, maneuver.qf.y, maneuver.qf.yaw);
 
     let dlat = DubinsManeuver2D::new(qi2d, qf2d, horizontal_radius, core::f64::NEG_INFINITY, false);
 
-    let qi3d = (0.0, maneuver.qi.2, maneuver.qi.4);
-    let qf3d = (dlat.maneuver.length, maneuver.qf.2, maneuver.qf.4);
+    let qi3d = (0.0, maneuver.qi.z, maneuver.qi.pitch);
+    let qf3d = (dlat.maneuver.length, maneuver.qf.z, maneuver.qf.pitch);
 
     let vertical_curvature = (1.0 / maneuver.rhomin / maneuver.rhomin - 1.0 / horizontal_radius / horizontal_radius).sqrt();
     if vertical_curvature < 1e-5 {
@@ -185,12 +184,12 @@ fn try_to_construct(maneuver: &DubinsManeuver3D, horizontal_radius: f64) -> Vec<
     }
 
     if dlon.maneuver.case.a == SegmentType::RIGHT {
-        if maneuver.qi.4 - dlon.maneuver.t < maneuver.pitchlims.0 {
+        if maneuver.qi.pitch - dlon.maneuver.t < maneuver.pitchlims.0 {
             return vec![];
         }
     }
     else {
-        if maneuver.qi.4 + dlon.maneuver.t > maneuver.pitchlims.1 {
+        if maneuver.qi.pitch + dlon.maneuver.t > maneuver.pitchlims.1 {
             return vec![];
         }
     }

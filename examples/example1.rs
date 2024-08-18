@@ -1,5 +1,5 @@
 // mod dubins3d;
-use dubins3d::{DubinsManeuver3D};
+use dubins3d::{State, DubinsManeuver3D};
 // mod vertical;
 // mod dubins3d;
 
@@ -18,8 +18,8 @@ use csv::Writer;
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
-    let qi = (0.0, 0.0, 0.0, 0.0, 0.0);
-    let qf = (100.0, 100.0, 100.0, 0.0, 0.0);
+    let qi = State{x: 0.0, y: 0.0, z: 0.0, yaw: 0.0, pitch: 0.0};
+    let qf = State{x: 100.0, y: 100.0, z: 100.0, yaw: 0.0, pitch: 0.0};
     let rhomin = 10.0;
     let pitchlims = (PI * -15.0 / 180.0, PI * 20.0 / 180.0);
 
@@ -27,12 +27,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let samples = dubins.compute_sampling(500);
     println!("{}", samples.len());
 
-    println!("{} {} {}", samples[0].0 - qi.0, samples[0].1 - qi.1, samples[0].2 - qi.2);
-    println!("{} {} {}", samples[samples.len()-1].0 - qf.0, samples[samples.len()-1].1 - qf.1, samples[samples.len()-1].2 - qf.2);
+    println!("{} {} {}", samples[0].x - qi.x, samples[0].y - qi.y, samples[0].z - qi.z);
+    println!("{} {} {}", samples[samples.len()-1].x - qf.x, samples[samples.len()-1].y - qf.y, samples[samples.len()-1].z - qf.z);
     
-    let mut wtr = Writer::from_path("foo.csv")?;
+    let mut wtr = Writer::from_path("path.csv")?;
     for state in samples.iter() {
-        wtr.write_record(&[state.0.to_string(), state.1.to_string(), state.2.to_string()])?;
+        wtr.write_record(&[state.x.to_string(), state.y.to_string(), state.z.to_string()])?;
     }
     wtr.flush()?;
     Ok(())

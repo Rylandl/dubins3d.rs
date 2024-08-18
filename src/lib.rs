@@ -7,12 +7,13 @@ pub(crate) fn mod2pi(th: f64) -> f64{
     return t;
 }
 
-pub struct state {
-    x: f64,
-    y: f64,
-    z: f64,
-    yaw: f64,
-    pitch: f64
+#[derive(Copy, Clone)]
+pub struct State {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub yaw: f64,
+    pub pitch: f64
 }
 
 mod dubins2d;
