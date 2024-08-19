@@ -78,12 +78,9 @@ impl DubinsManeuver2D {
         let a = mod2pi(maneuver.qi.2 - rotation_angle);
         let b = mod2pi(maneuver.qf.2 - rotation_angle);
     
-        let sa = a.sin();
-        let ca = a.cos();
-        let sb = b.sin();
-        let cb = b.cos();
+        let (sa, ca) = (a.sin(),  a.cos());
+        let (sb, cb) = (b.sin(),  b.cos());
     
-        // # CSC
         let path_lsl = _lsl(&maneuver, a, b, d, sa, ca, sb, cb);
         let path_rsr = _rsr(&maneuver, a, b, d, sa, ca, sb, cb);
         let path_lsr = _lsr(&maneuver, a, b, d, sa, ca, sb, cb);
@@ -111,7 +108,6 @@ impl DubinsManeuver2D {
             }
         }
         
-        // _paths.sort_by(|p1,p2| p1.length.partial_cmp(&p2.length).unwrap());
         _paths.sort_by(|p1, p2| {
             let a = p1.length;
             let b = p2.length;
@@ -150,11 +146,7 @@ fn _lsl(maneuver: &DubinsManeuver2D, a: f64, b: f64, d: f64, sa: f64, ca: f64, s
         p: p,
         q: q,
         length: length,
-        case: ManeuverCase {
-            a: SegmentType::LEFT,
-            b: SegmentType::STRAIGHT,
-            c: SegmentType::LEFT
-        }
+        case: ManeuverCase {a: SegmentType::LEFT, b: SegmentType::STRAIGHT, c: SegmentType::LEFT}
     };
     
     return ds;
@@ -172,11 +164,7 @@ fn _rsr(maneuver: &DubinsManeuver2D, a: f64, b: f64, d: f64, sa: f64, ca: f64, s
         p: p,
         q: q,
         length: length,
-        case: ManeuverCase {
-            a: SegmentType::RIGHT,
-            b: SegmentType::STRAIGHT,
-            c: SegmentType::RIGHT
-        }
+        case: ManeuverCase {a: SegmentType::RIGHT, b: SegmentType::STRAIGHT, c: SegmentType::RIGHT}
     };
     
     return ds;
@@ -201,11 +189,7 @@ fn _lsr(maneuver: &DubinsManeuver2D, a: f64, b: f64, d: f64, sa: f64, ca: f64, s
         p: p,
         q: q,
         length: length,
-        case: ManeuverCase {
-            a: SegmentType::LEFT,
-            b: SegmentType::STRAIGHT,
-            c: SegmentType::RIGHT
-        }
+        case: ManeuverCase {a: SegmentType::LEFT, b: SegmentType::STRAIGHT, c: SegmentType::RIGHT}
     };
     
     return ds;
@@ -230,11 +214,7 @@ fn _rsl(maneuver: &DubinsManeuver2D, a: f64, b: f64, d: f64, sa: f64, ca: f64, s
         p: p,
         q: q,
         length: length,
-        case: ManeuverCase {
-            a: SegmentType::RIGHT,
-            b: SegmentType::STRAIGHT,
-            c: SegmentType::LEFT
-        }
+        case: ManeuverCase {a: SegmentType::RIGHT, b: SegmentType::STRAIGHT, c: SegmentType::LEFT}
     };
     
     return ds;
@@ -257,11 +237,7 @@ fn _rlr(maneuver: &DubinsManeuver2D, a: f64, b: f64, d: f64, sa: f64, ca: f64, s
         p: p,
         q: q,
         length: length,
-        case: ManeuverCase {
-            a: SegmentType::RIGHT,
-            b: SegmentType::LEFT,
-            c: SegmentType::RIGHT
-        }
+        case: ManeuverCase {a: SegmentType::RIGHT, b: SegmentType::LEFT, c: SegmentType::RIGHT}
     };
     
     return ds;
@@ -284,11 +260,7 @@ fn _lrl(maneuver: &DubinsManeuver2D, a: f64, b: f64, d: f64, sa: f64, ca: f64, s
         p: p,
         q: q,
         length: length,
-        case: ManeuverCase {
-            a: SegmentType::LEFT,
-            b: SegmentType::RIGHT,
-            c: SegmentType::LEFT
-        }
+        case: ManeuverCase {a: SegmentType::LEFT, b: SegmentType::RIGHT, c: SegmentType::LEFT}
     };
     
     return ds;
@@ -300,11 +272,7 @@ fn _c(maneuver: &DubinsManeuver2D) -> DubinsStruct{
         p: 2.0*PI,
         q: 0.0,
         length: 2.0*PI * maneuver.rhomin,
-        case: ManeuverCase {
-            a: SegmentType::RIGHT,
-            b: SegmentType::RIGHT,
-            c: SegmentType::RIGHT
-        }
+        case: ManeuverCase {a: SegmentType::RIGHT, b: SegmentType::RIGHT, c: SegmentType::RIGHT}
     };
     
     return ds;
@@ -362,12 +330,3 @@ fn get_position_in_segment(offset: f64, qi: (f64,f64,f64), case: SegmentType) ->
     }
     return q;
 }
-
-// function getSamplingPoints(self, res=0.1)
-//     points = []    
-//     range = 0.0:res:self.maneuver.length
-//     for offset in range
-//         push!(points, getCoordinatesAt(self, offset))
-//     end
-//     return points
-// end

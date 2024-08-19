@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use crate::State;
-// mod dubins2d;
 use crate::dubins2d::{
     DubinsManeuver2D, 
     SegmentType, 
@@ -10,8 +9,7 @@ use crate::dubins2d::{
 };
 use crate::vertical;
 
-// use dubins2d::DubinsManeuver2D
-
+/// Store 3D Dubins maneuver parameters and result
 pub struct DubinsManeuver3D {
     qi: State,
     qf: State,
@@ -22,6 +20,7 @@ pub struct DubinsManeuver3D {
 }
 
 impl DubinsManeuver3D {
+    /// Create a new Dubins maneuver with desired 
     pub fn new(qi: State, qf: State, rhomin: f64, pitchlims: (f64, f64)) -> DubinsManeuver3D {
         let mut maneuver = DubinsManeuver3D {
             qi: qi,
@@ -106,7 +105,7 @@ impl DubinsManeuver3D {
         return maneuver;
     }
     
-    pub fn get_upper_bound(qi: State, qf: State, rhomin: f64, pitchlims: (f64, f64)) -> DubinsManeuver3D {
+    pub fn get_upper_bound(qi: State, qf: State, rhomin: f64, pitchlims: (f64, f64)) -> Self {
         let mut maneuver = DubinsManeuver3D {
             qi: qi,
             qf: qf,
