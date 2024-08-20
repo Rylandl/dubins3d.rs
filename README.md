@@ -1,4 +1,4 @@
-# Dubins3d.rs
+# dubins3d.rs
 
 This library is a Rust reimplementation of Petr Vana's [Dubins3D.jl](https://github.com/comrob/Dubins3D.jl/tree/master) Julia library. It allows the generation of 3D Dubins paths between two states while bounded by turn radius and pitch angle constraits.
 
